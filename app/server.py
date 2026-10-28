@@ -47,6 +47,12 @@ def teams() -> list:
 
 
 def as_of() -> str:
+    # the week the ratings and injury report were built from. Saved with the ratings so a fresh clone has it too
+    priors = ROOT / "data" / "players" / "priors.json"
+    if priors.exists():
+        saved = json.loads(priors.read_text()).get("as_of")
+        if saved:
+            return saved
     files = sorted((ROOT / "data" / "raw").glob("injuries_*.parquet"))
     if not files:
         return ""
