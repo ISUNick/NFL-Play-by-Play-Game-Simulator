@@ -1,0 +1,828 @@
+{
+  "play_call": {
+    "file": "play_call.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "down",
+          "dist_b",
+          "zone_b",
+          "score_b",
+          "time_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "down",
+          "dist_b",
+          "zone_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "down",
+          "dist_b"
+        ]
+      ],
+      [
+        "L4",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_dropback"
+    ]
+  },
+  "play_call_fourth": {
+    "file": "play_call_fourth.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "fdist",
+          "zone_b",
+          "score_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "fdist",
+          "zone_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "fdist"
+        ]
+      ],
+      [
+        "L4",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_dropback"
+    ]
+  },
+  "play_call_late": {
+    "file": "play_call_late.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "down",
+          "dist_b",
+          "late_score",
+          "late_time"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "down",
+          "late_score",
+          "late_time"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "late_score",
+          "late_time"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_dropback"
+    ]
+  },
+  "dropback_split": {
+    "file": "dropback_split.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "down",
+          "dist_b",
+          "zone_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "down",
+          "dist_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "down"
+        ]
+      ],
+      [
+        "L4",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_sack",
+      "p_scramble"
+    ]
+  },
+  "pass_depth": {
+    "file": "pass_depth.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "down",
+          "dist_b",
+          "zone_b",
+          "score_b",
+          "time_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "down",
+          "dist_b",
+          "zone_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "down",
+          "dist_b"
+        ]
+      ],
+      [
+        "L4",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_short",
+      "p_medium",
+      "p_deep"
+    ]
+  },
+  "pass_result": {
+    "file": "pass_result.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "depth",
+          "down",
+          "dist_b",
+          "zone_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "depth",
+          "down",
+          "zone_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "depth",
+          "zone_b"
+        ]
+      ],
+      [
+        "L4",
+        [
+          "depth"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_complete",
+      "p_int"
+    ]
+  },
+  "pass_depth_fourth": {
+    "file": "pass_depth_fourth.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "fdist",
+          "zone_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "fdist"
+        ]
+      ],
+      [
+        "L3",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_short",
+      "p_medium",
+      "p_deep"
+    ]
+  },
+  "pass_result_fourth": {
+    "file": "pass_result_fourth.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "depth",
+          "fdist",
+          "zone_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "depth",
+          "fdist"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "depth"
+        ]
+      ],
+      [
+        "L4",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_complete",
+      "p_int"
+    ]
+  },
+  "pass_depth_third": {
+    "file": "pass_depth_third.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "fdist",
+          "zone_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "fdist"
+        ]
+      ],
+      [
+        "L3",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_short",
+      "p_medium",
+      "p_deep"
+    ]
+  },
+  "pass_result_third": {
+    "file": "pass_result_third.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "depth",
+          "fdist",
+          "zone_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "depth",
+          "fdist"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "depth"
+        ]
+      ],
+      [
+        "L4",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_complete",
+      "p_int"
+    ]
+  },
+  "bank_time": {
+    "file": "bank_time.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "kind",
+          "tempo",
+          "score_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "kind",
+          "tempo"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "kind"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "seconds"
+    ]
+  },
+  "penalty_pre": {
+    "file": "penalty_pre.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "down",
+          "dist_b",
+          "zone_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "down",
+          "dist_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "down"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_off",
+      "p_def"
+    ]
+  },
+  "penalty_post": {
+    "file": "penalty_post.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "kind",
+          "zone_b",
+          "down"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "kind",
+          "zone_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "kind"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_off",
+      "p_def"
+    ]
+  },
+  "try_choice": {
+    "file": "try_choice.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "sd_key",
+          "phase"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "sd_key"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "score_b",
+          "phase"
+        ]
+      ],
+      [
+        "L4",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_two"
+    ]
+  },
+  "onside_choice": {
+    "file": "onside_choice.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "late_score",
+          "kwin"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "late_score"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_onside"
+    ]
+  },
+  "fourth_down": {
+    "file": "fourth_down.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "fdist",
+          "fzone",
+          "score_b",
+          "time_b"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "fdist",
+          "fzone",
+          "score_b"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "fdist",
+          "fzone"
+        ]
+      ],
+      [
+        "L4",
+        [
+          "fzone"
+        ]
+      ],
+      [
+        "L5",
+        []
+      ]
+    ],
+    "outcomes": [
+      "p_go",
+      "p_punt",
+      "p_fg"
+    ]
+  },
+  "fourth_down_late": {
+    "file": "fourth_down_late.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "late_zone",
+          "late_fdist",
+          "late_score",
+          "late_time",
+          "late_q"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "late_zone",
+          "late_fdist",
+          "late_score",
+          "late_q"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "late_zone",
+          "late_fdist",
+          "late_score"
+        ]
+      ],
+      [
+        "L4",
+        [
+          "late_zone",
+          "late_fdist"
+        ]
+      ],
+      [
+        "L5",
+        [
+          "late_fdist"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_go",
+      "p_punt",
+      "p_fg"
+    ]
+  },
+  "half_snap": {
+    "file": "half_snap.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "hwin",
+          "rs",
+          "hzone",
+          "dto",
+          "has_to",
+          "hdown"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "hwin",
+          "rs",
+          "hzone",
+          "dto",
+          "has_to"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "hwin",
+          "rs",
+          "hzone",
+          "has_to"
+        ]
+      ],
+      [
+        "L4",
+        [
+          "hwin",
+          "rs",
+          "hzone"
+        ]
+      ],
+      [
+        "L5",
+        [
+          "hwin",
+          "hzone"
+        ]
+      ],
+      [
+        "L6",
+        [
+          "hwin"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_kneel",
+      "p_spike",
+      "p_fg"
+    ]
+  },
+  "half_timeout_off": {
+    "file": "half_timeout_off.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "hwin",
+          "hzone",
+          "hdown"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "hwin",
+          "hzone"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "hwin"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_timeout"
+    ]
+  },
+  "half_timeout_def": {
+    "file": "half_timeout_def.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "hwin",
+          "hzone",
+          "hdown"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "hwin",
+          "hzone"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "hwin"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_timeout"
+    ]
+  },
+  "half_spike": {
+    "file": "half_spike.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "hwin",
+          "hzone",
+          "hdown"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "hwin",
+          "hdown"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "hwin"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_spike"
+    ]
+  },
+  "late_timeout_off": {
+    "file": "late_timeout_off.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "lwin",
+          "lzone",
+          "lsd",
+          "ldown"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "lwin",
+          "lsd",
+          "ldown"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "lwin",
+          "lsd"
+        ]
+      ],
+      [
+        "L4",
+        [
+          "lwin"
+        ]
+      ],
+      [
+        "L5",
+        [
+          "lwin2"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_timeout"
+    ]
+  },
+  "late_timeout_def": {
+    "file": "late_timeout_def.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "lwin",
+          "lzone",
+          "lsd",
+          "ldown"
+        ]
+      ],
+      [
+        "L2",
+        [
+          "lwin",
+          "lsd",
+          "ldown"
+        ]
+      ],
+      [
+        "L3",
+        [
+          "lwin",
+          "lsd"
+        ]
+      ],
+      [
+        "L4",
+        [
+          "lwin"
+        ]
+      ],
+      [
+        "L5",
+        [
+          "lwin2"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_timeout"
+    ]
+  },
+  "fourth_down_ot": {
+    "file": "fourth_down_ot.csv",
+    "levels": [
+      [
+        "L1",
+        [
+          "late_zone",
+          "late_dist",
+          "late_score"
+        ]
+      ]
+    ],
+    "outcomes": [
+      "p_go",
+      "p_punt",
+      "p_fg"
+    ]
+  }
+}

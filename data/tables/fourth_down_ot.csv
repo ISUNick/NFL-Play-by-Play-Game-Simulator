@@ -1,0 +1,8 @@
+level,late_zone,late_dist,late_score,n,p_go,p_punt,p_fg
+L1,fg,long,tied,35,0.0,0.0,1.0
+L1,fg,medium,tied,34,0.029411764705882353,0.0,0.9705882352941176
+L1,fg,short,tied,20,0.3,0.0,0.7
+L1,mid,long,tied,50,0.04,0.96,0.0
+L1,mid,medium,tied,22,0.09090909090909091,0.9090909090909091,0.0
+L1,own,long,tied,53,0.018867924528301886,0.9811320754716981,0.0
+L1,own,medium,tied,26,0.0,1.0,0.0

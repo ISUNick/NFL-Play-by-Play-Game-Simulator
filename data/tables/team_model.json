@@ -1,0 +1,75 @@
+{
+  "channels": {
+    "completion": {
+      "sensitivity": 10.80588,
+      "sensitivity_error": 0.1548787356819263,
+      "own_points": 9.159200000000006,
+      "other_points": -1.6466800000000035,
+      "tau_offense": 0.11695176816714381,
+      "tau_defense": 0.09362172868352406,
+      "share_offense": 0.36535971645811516,
+      "points_sd_offense": 1.263766772601976,
+      "share_defense": 0.37450246715304475,
+      "points_sd_defense": 1.011665165546719
+    },
+    "interception": {
+      "sensitivity": -1.8951,
+      "sensitivity_error": 0.09715171596940529,
+      "own_points": -0.7498249999999995,
+      "other_points": 1.145274999999999,
+      "tau_offense": 0.19263916527657063,
+      "tau_defense": 0.15953951588314622,
+      "share_offense": 0.10554324636845186,
+      "points_sd_offense": 0.365070482115629,
+      "share_defense": 0.11192272831112493,
+      "points_sd_defense": 0.3023433365501504
+    },
+    "sack": {
+      "sensitivity": -3.4489,
+      "sensitivity_error": 0.09675217221166148,
+      "own_points": -2.940324999999997,
+      "other_points": 0.5085749999999978,
+      "tau_offense": 0.2361091864715083,
+      "tau_defense": 0.13897211840562745,
+      "share_offense": 0.2354220928207396,
+      "points_sd_offense": 0.814316973221585,
+      "share_defense": 0.1774296381259909,
+      "points_sd_defense": 0.47930093916916855
+    },
+    "completion_yards": {
+      "sensitivity": 91.36299999999999,
+      "sensitivity_error": 3.8765214353463855,
+      "own_points": 100.57500000000007,
+      "other_points": 9.211999999999954,
+      "tau_offense": 0.0036522815227832115,
+      "tau_defense": 0.002790990853620236,
+      "share_offense": 0.09646912220853197,
+      "points_sd_offense": 0.33368339676604253,
+      "share_defense": 0.09439449159736824,
+      "points_sd_defense": 0.2549932973593056
+    },
+    "run_yards": {
+      "sensitivity": 83.7165,
+      "sensitivity_error": 1.9547412797541774,
+      "own_points": 88.11800000000005,
+      "other_points": 4.4014999999999915,
+      "tau_offense": 0.008148073546317545,
+      "tau_defense": 0.0078007928442763875,
+      "share_offense": 0.1972058221441614,
+      "points_sd_offense": 0.6821281990402928,
+      "share_defense": 0.24175067481247117,
+      "points_sd_defense": 0.6530550741478641
+    }
+  },
+  "net_sd_target": 5.17,
+  "league_correction": 1.0,
+  "points_per_rating_point_offense": 0.6928303673508658,
+  "points_per_rating_point_defense": 0.6928303673508658,
+  "channel_centering": {
+    "completion": 0.004029361776519437,
+    "interception": -0.03708991493110608,
+    "sack": -0.038095693203649944,
+    "completion_yards": -0.00021847688373944745,
+    "run_yards": -0.002190206327598058
+  }
+}

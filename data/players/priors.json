@@ -1,0 +1,109 @@
+{
+  "seasons": [
+    2025,
+    2026
+  ],
+  "half_life_weeks": 8.0,
+  "madden_qb_slopes": {
+    "completion": 0.01313002174157832,
+    "interception": -0.013316858064868944,
+    "sack": -0.07545780734948586,
+    "completion_yards": 0.14744240544375925
+  },
+  "completion": {
+    "cp_offset": -0.03414855994553395,
+    "tau_receiver": 0.2,
+    "tau_off": 0.09,
+    "tau_def": 0.2
+  },
+  "interception": {
+    "tau_off": 0.14,
+    "tau_def": 0.45,
+    "rate_by_depth": {
+      "deep": 0.04546492757765252,
+      "medium": 0.03483748229516965,
+      "short": 0.012296084610901665
+    }
+  },
+  "sack": {
+    "tau_off": 0.2,
+    "tau_def": 0.3,
+    "league_rate": 0.06390868691004116
+  },
+  "completion_yards": {
+    "tau_receiver": 0.5,
+    "tau_off": 0.03,
+    "tau_def": 0.3,
+    "within_sd": 6.861717163726063,
+    "yards_variance": 94.99745268861302
+  },
+  "qb_look": {
+    "seasons_back": 3,
+    "half_life_weeks": 40.0
+  },
+  "run_yards": {
+    "tau_runner": 0.3,
+    "tau_off": 0.3,
+    "tau_def": 0.3,
+    "within_sd": 5.751920747900045,
+    "yards_variance": 33.48026581385896
+  },
+  "target_rate": {
+    "WR": {
+      "league_rate": 0.18639355976146446,
+      "prior_snaps": 97.43415712511701
+    },
+    "TE": {
+      "league_rate": 0.13476976447971037,
+      "prior_snaps": 46.70807521095928
+    },
+    "RB": {
+      "league_rate": 0.1286963357891878,
+      "prior_snaps": 111.97588546003934
+    }
+  },
+  "depth_mix": {
+    "WR": {
+      "prior_throws": 80,
+      "league_mix": {
+        "short": 0.5439383704802465,
+        "medium": 0.2828631881800735,
+        "deep": 0.1731984413396801
+      }
+    },
+    "TE": {
+      "prior_throws": 200,
+      "league_mix": {
+        "short": 0.7460884709347468,
+        "medium": 0.18803021929832878,
+        "deep": 0.06588130976692429
+      }
+    },
+    "RB": {
+      "prior_throws": 400,
+      "league_mix": {
+        "short": 0.9605854134098896,
+        "medium": 0.02873368466180572,
+        "deep": 0.010680901928304804
+      }
+    }
+  },
+  "carry_rate": {
+    "QB": {
+      "league_rate": 0.048432984339603,
+      "prior_snaps": 27.357069710186586
+    },
+    "RB": {
+      "league_rate": 0.7868967547355707,
+      "prior_snaps": 10.812998348800628
+    },
+    "WR": {
+      "league_rate": 0.019375778385573156,
+      "prior_snaps": 49.41740913146786
+    },
+    "TE": {
+      "league_rate": 0.009687225723460773,
+      "prior_snaps": 312.4433423444069
+    }
+  }
+}

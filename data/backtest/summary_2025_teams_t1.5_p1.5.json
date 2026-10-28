@@ -1,0 +1,78 @@
+{
+  "games": 208,
+  "straight_up_accuracy": 0.6009615384615384,
+  "vegas_straight_up_accuracy": 0.6298076923076923,
+  "brier": 0.2391546875,
+  "vegas_brier": 0.21660374979121444,
+  "logloss": 0.6723844058881998,
+  "vegas_logloss": 0.6193655170562782,
+  "margin_mae": 10.793701923076924,
+  "vegas_margin_mae": 9.992788461538462,
+  "margin_corr_with_result": 0.2693517229915529,
+  "vegas_margin_corr_with_result": 0.5132488231342123,
+  "total_mae": 10.588990384615386,
+  "vegas_total_mae": 10.08173076923077,
+  "mean_sim_total": 46.379951923076916,
+  "mean_real_total": 45.875,
+  "sim_vs_vegas_margin_corr": 0.5422561745908844,
+  "calibration": [
+    {
+      "bin": "(-0.001, 0.2]",
+      "games": 1,
+      "predicted": 0.195,
+      "actual": 1.0
+    },
+    {
+      "bin": "(0.2, 0.35]",
+      "games": 5,
+      "predicted": 0.311,
+      "actual": 0.2
+    },
+    {
+      "bin": "(0.35, 0.5]",
+      "games": 54,
+      "predicted": 0.44425925925925924,
+      "actual": 0.35185185185185186
+    },
+    {
+      "bin": "(0.5, 0.65]",
+      "games": 91,
+      "predicted": 0.5805494505494506,
+      "actual": 0.5274725274725275
+    },
+    {
+      "bin": "(0.65, 0.8]",
+      "games": 57,
+      "predicted": 0.7116666666666667,
+      "actual": 0.6666666666666666
+    }
+  ],
+  "team_stat_means": {
+    "pass_yards": {
+      "sim": 251.90149038461536,
+      "real": 222.62980769230768
+    },
+    "rush_yards": {
+      "sim": 119.87774038461538,
+      "real": 116.30528846153847
+    },
+    "sack": {
+      "sim": 2.6627884615384616,
+      "real": 2.387019230769231
+    },
+    "interceptions_thrown": {
+      "sim": 0.7962019230769232,
+      "real": 0.6658653846153846
+    },
+    "plays": {
+      "sim": 65.39466346153846,
+      "real": 59.72596153846154
+    },
+    "first_downs": {
+      "sim": 19.291826923076922,
+      "real": 17.420673076923077
+    }
+  },
+  "sim_margin_sd": 12.281964376912075,
+  "real_margin_sd": 14.353761595606757
+}

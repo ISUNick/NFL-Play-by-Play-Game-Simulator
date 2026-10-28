@@ -1,0 +1,16 @@
+{
+  "test_throws": 7701,
+  "logloss_cp_only": 0.5752141625413321,
+  "logloss_qb_only": 0.5748696040267175,
+  "logloss_qb_and_receiver": 0.5742805691773907,
+  "improvement_vs_cp_only": 0.0009335933639413874,
+  "real_completion_rate": 0.6619919490975198,
+  "predicted_completion_rate": 0.6759165171826441,
+  "tau_qb": 0.14,
+  "tau_receiver": 0.2,
+  "split_half_corr_qb": 0.4948865407253735,
+  "split_half_n_qb": 91,
+  "split_half_corr_receiver": 0.22451564914460803,
+  "split_half_n_receiver": 556,
+  "qb_comp_shift_sd": 0.08899584510749026
+}

@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Sim</title>
+<style>
+  :root {
+    --bg: #0e1411; --panel: #16201b; --line: #26352d; --text: #e8efe9; --muted: #8fa396;
+    --home: #4aa3ff; --away: #ffb347; --good: #5ad17b; --bad: #ff6b6b;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f3f6f4; --panel: #ffffff; --line: #d8e1db; --text: #14211a; --muted: #5d7066; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, Segoe UI, sans-serif; }
+  header { padding: 18px 24px 0; }
+  h1 { margin: 0 0 12px; font-size: 20px; letter-spacing: .02em; }
+  main { padding: 16px 24px 48px; max-width: 1200px; margin: 0 auto; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; flex: 1 1 320px; }
+  .card h2 { margin: 0 0 10px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  select, button { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; }
+  button { cursor: pointer; }
+  button.primary { background: var(--good); color: #06210f; border-color: var(--good); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  nav { display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  nav button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 10px 14px; color: var(--muted); white-space: nowrap; }
+  nav button.on { color: var(--text); border-bottom-color: var(--good); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .tile .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tile .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  .players label { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; }
+  .players .role { color: var(--muted); font-size: 12px; margin-left: auto; }
+  .out { text-decoration: line-through; color: var(--bad); }
+  .home { color: var(--home); } .away { color: var(--away); }
+  h3 { margin: 18px 0 6px; font-size: 15px; }
+  table.box { margin-bottom: 10px; font-size: 13px; }
+  table.box th:first-child { min-width: 150px; }
+  table.box tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
+  .bar { display: flex; height: 36px; border-radius: 8px; overflow: hidden; font-weight: 700; font-size: 14px; }
+  .bar div { display: flex; align-items: center; padding: 0 10px; transition: width .25s; white-space: nowrap; }
+  .feed { max-height: 360px; overflow: auto; font-size: 13px; }
+  .feed div { padding: 3px 0; border-bottom: 1px solid var(--line); display: flex; gap: 10px; }
+  .feed .p { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); }
+  svg text { fill: var(--muted); font-size: 11px; }
+  .muted { color: var(--muted); }
+  .hidden { display: none; }
+  .pos { color: var(--good); } .neg { color: var(--bad); }
+  #tip { position: fixed; z-index: 10; pointer-events: none; display: none; max-width: 340px; padding: 8px 10px; border-radius: 6px; background: #12202b; color: #fff; font-size: 12.5px; line-height: 1.4; white-space: pre-line; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+</style>
+</head>
+<body>
+<div id="tip"></div>
+<header><h1>Football Sim</h1></header>
+<nav id="tabs"></nav>
+<main>
+  <div class="row" id="setup">
+    <div class="card" style="flex-basis:260px">
+      <h2>Matchup</h2>
+      <p><span class="home">Home</span> <select id="home"></select></p>
+      <p><span class="away">Away</span> <select id="away"></select></p>
+      <p class="muted" style="font-size:12px">Players the injury report lists out are already checked. Uncheck one to have him play, or check anyone else to take him out. <span id="asOf"></span></p>
+    </div>
+    <div class="card players" id="homeCard"><h2 class="home">Home lineup</h2><div id="homePlayers"></div></div>
+    <div class="card players" id="awayCard"><h2 class="away">Away lineup</h2><div id="awayPlayers"></div></div>
+  </div>
+
+  <section id="tab-run">
+    <p>
+      <select id="games"><option value="10000">10,000 games</option><option value="100000">100,000 games</option><option value="1000000" selected>1,000,000 games</option></select>
+      <button class="primary" id="start">Start run</button> <button id="stop">Stop</button>
+      <span class="muted" id="seedNote">every game has its own seed, so any run repeats exactly</span>
+    </p>
+    <div class="tiles">
+      <div class="tile"><div class="v" id="tGames">0</div><div class="l">games finished</div></div>
+      <div class="tile"><div class="v" id="tRate">0</div><div class="l">games per second</div></div>
+      <div class="tile"><div class="v" id="tEta">-</div><div class="l">time left</div></div>
+      <div class="tile"><div class="v" id="tWin">-</div><div class="l" id="tWinLabel">home win probability</div></div>
+      <div class="tile"><div class="v" id="tBand">-</div><div class="l">95% range</div></div>
+      <div class="tile"><div class="v" id="tMargin">-</div><div class="l">average margin</div></div>
+    </div>
+    <div class="row">
+      <div class="card" style="flex-basis:520px"><h2>Win probability as games finish</h2><svg id="winChart" viewBox="0 0 560 240" width="100%"></svg></div>
+      <div class="card"><h2>Average per game</h2><table id="teamTable"></table></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>Final scores of every game</h2>
+      <p class="muted" style="font-size:12px;margin:0 0 6px">One dot per final score. Bigger and brighter means more games ended that way. Blue is a home win, orange an away win, gray a tie.</p>
+      <svg id="scoreChart" viewBox="0 0 640 520" width="100%" style="max-width:760px"></svg></div>
+    <p><button id="typical" disabled>Show the typical game</button> <span class="muted" id="typicalNote">picks the one finished game closest to the averages, then replays it play by play</span></p>
+    <div class="card" style="margin-top:16px"><h2>Player averages per game</h2><div id="runBoxes"></div></div>
+  </section>
+
+  <section id="tab-matchup" class="hidden">
+    <p><button class="primary" id="scenario">Simulate this lineup (3,000 games)</button>
+       <button id="clearScenarios">Clear</button>
+       <span class="muted">Run the injury report lineups first, then change who is out and run again to see the change.</span></p>
+    <div class="card"><h2>Scenarios</h2><table id="scenarioTable"></table></div>
+  </section>
+
+  <section id="tab-live" class="hidden">
+    <p>
+      <button class="primary" id="playGame">Play a game</button>
+      <label class="muted"><input type="checkbox" id="exactBox"> also check against exact rollouts (slower)</label>
+      <select id="speed"><option value="300">slow</option><option value="80" selected>normal</option><option value="15">fast</option></select>
+      <span class="muted" id="liveNote"></span>
+    </p>
+    <div class="card">
+      <div class="bar" id="liveBar"><div id="liveHome" style="background:var(--home);color:#04213f;width:50%"></div><div id="liveAway" style="background:var(--away);color:#3a2300;width:50%;justify-content:flex-end"></div></div>
+      <p style="font-size:22px;margin:10px 0 0"><span class="home" id="sHome">0</span> - <span class="away" id="sAway">0</span> <span class="muted" style="font-size:14px" id="sClock"></span></p>
+      <svg id="liveChart" viewBox="0 0 800 220" width="100%"></svg>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <div class="card" style="flex-basis:420px"><h2>Play by play</h2><div class="feed" id="feed"></div></div>
+      <div class="card" style="flex-basis:620px"><h2>Box score</h2><div id="box" class="muted">Appears when the game ends.</div></div>
+    </div>
+  </section>
+
+  <section id="tab-validation" class="hidden">
+    <div class="card"><h2>Backtest on real games (no future data used)</h2><div id="valTable" class="muted">loading...</div></div>
+    <div class="row" style="margin-top:16px">
+      <div class="card"><h2>Calibration: when it says X%, how often does the home team win?</h2><svg id="calChart" viewBox="0 0 400 300" width="100%"></svg></div>
+      <div class="card"><h2>Team stats per game, simulated vs real</h2><table id="statTable"></table></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>Live win probability model</h2><div id="wpInfo" class="muted"></div></div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (x, d = 1) => Number(x).toFixed(d);
+const pct = x => (100 * x).toFixed(1) + "%";
+const state = { out: { home: new Set(), away: new Set() }, play: { home: new Set(), away: new Set() }, reported: { home: new Set(), away: new Set() }, scenarios: [], timer: null };
+const tabs = [["run", "Million game run"], ["matchup", "Matchup picker"], ["live", "Live game"], ["validation", "Validation"]];
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  const j = await r.json();
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+
+function buildTabs() {
+  $("tabs").innerHTML = tabs.map(([k, n]) => `<button data-tab="${k}">${n}</button>`).join("");
+  $("tabs").onclick = e => { if (e.target.dataset.tab) showTab(e.target.dataset.tab); };
+  showTab("run");
+}
+function showTab(k) {
+  for (const [t] of tabs) $("tab-" + t).classList.toggle("hidden", t !== k);
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === k));
+  $("setup").classList.toggle("hidden", k === "validation");
+  if (k === "validation") loadValidation();
+}
+
+async function loadTeams() {
+  const teams = await api("/api/teams");
+  for (const id of ["home", "away"]) $(id).innerHTML = teams.map(t => `<option value="${t.abbr}">${t.name}</option>`).join("");
+  $("home").value = "CHI"; $("away").value = "GB";
+  $("home").onchange = () => loadLineup("home");
+  $("away").onchange = () => loadLineup("away");
+  await Promise.all([loadLineup("home"), loadLineup("away")]);
+}
+async function loadLineup(side) {
+  state.out[side].clear(); state.play[side].clear(); state.reported[side].clear();
+  const data = await api("/api/lineup?team=" + $(side).value);
+  data.active.filter(p => p.out).forEach(p => { state.out[side].add(p.name); state.reported[side].add(p.name); });
+  if (data.as_of) $("asOf").textContent = "Injury report as of " + data.as_of + ".";
+  const attr = t => t.replace(/"/g, "&quot;");
+  const box = $(side + "Players");
+  box.innerHTML = data.active.map(p => `<label data-name="${attr(p.name)}"><input type="checkbox"${p.out ? " checked" : ""}> <span class="${p.out ? "out" : ""}">${p.name}</span> <span class="muted">${p.position}</span><span class="role">${p.out ? p.reason : p.role}</span></label>`).join("")
+    + (data.unmodeled_out.length ? `<p class="muted" style="font-size:12px;margin:8px 0 0">Also out, but linemen and defenders are only rated as team units: ${data.unmodeled_out.join(", ")}</p>` : "");
+  box.onchange = e => {
+    const label = e.target.closest("label"), name = label.dataset.name;
+    if (e.target.checked) { state.out[side].add(name); state.play[side].delete(name); }
+    else { state.out[side].delete(name); if (state.reported[side].has(name)) state.play[side].add(name); }
+    label.querySelector("span").classList.toggle("out", e.target.checked);
+  };
+}
+const body = extra => ({ home: $("home").value, away: $("away").value, out_home: [...state.out.home], out_away: [...state.out.away],
+  play_home: [...state.play.home], play_away: [...state.play.away], ...extra });
+function lineupLabel() {
+  const added = ["home", "away"].flatMap(k => [...state.out[k]].filter(n => !state.reported[k].has(n)));
+  const back = ["home", "away"].flatMap(k => [...state.play[k]]);
+  const parts = [added.length ? "Also out: " + added.join(", ") : "", back.length ? "Playing: " + back.join(", ") : ""].filter(Boolean);
+  return parts.length ? parts.join("; ") : "Injury report lineups";
+}
+
+function drawLines(svg, w, h, series, opts = {}) {
+  const pad = { l: 38, r: 12, t: 10, b: 24 };
+  const xs = series.flatMap(s => s.points.map(p => p[0]));
+  const xmin = opts.xmin ?? Math.min(...xs), xmax = opts.xmax ?? Math.max(...xs);
+  const X = x => pad.l + (w - pad.l - pad.r) * (opts.log ? (Math.log10(Math.max(x, 1)) - Math.log10(Math.max(xmin, 1))) / ((Math.log10(Math.max(xmax, 10))) - Math.log10(Math.max(xmin, 1)) || 1) : (x - xmin) / ((xmax - xmin) || 1));
+  const Y = y => pad.t + (h - pad.t - pad.b) * (1 - (y - opts.ymin) / (opts.ymax - opts.ymin));
+  let out = "";
+  for (let g = 0; g <= 4; g++) {
+    const y = opts.ymin + (opts.ymax - opts.ymin) * g / 4;
+    out += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--line)"/><text x="${pad.l - 6}" y="${Y(y) + 4}" text-anchor="end">${Math.round(y * 100)}%</text>`;
+  }
+  if (opts.half) out += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${Y(.5)}" y2="${Y(.5)}" stroke="var(--muted)" stroke-dasharray="4 4"/>`;
+  for (const s of series) {
+    if (s.band) {
+      const up = s.points.map(p => `${X(p[0])},${Y(p[2])}`), dn = s.points.slice().reverse().map(p => `${X(p[0])},${Y(p[3])}`);
+      out += `<polygon points="${up.concat(dn).join(" ")}" fill="${s.color}" opacity=".18"/>`;
+    }
+    if (s.dots) out += s.points.map(p => `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.5" fill="none" stroke="${s.color}" stroke-width="1.5"/>`).join("");
+    else out += `<polyline fill="none" stroke="${s.color}" stroke-width="2" points="${s.points.map(p => `${X(p[0])},${Y(p[1])}`).join(" ")}"/>`;
+  }
+  for (const s of series) for (const m of s.marks || [])
+    out += `<circle cx="${X(m.x)}" cy="${Y(m.y)}" r="5.5" fill="${m.color}" stroke="var(--panel)" stroke-width="1.5" data-tip="${m.tip.replace(/"/g, "&quot;")}" style="cursor:pointer"/>`;
+  (opts.xticks || []).forEach(([x, label]) => out += `<text x="${X(x)}" y="${h - 6}" text-anchor="${x >= xmax && x > xmin ? "end" : "middle"}">${label}</text>`);
+  svg.innerHTML = out;
+}
+
+function drawScores(svg, cells, home, away) {
+  const w = 640, h = 520, pad = { l: 44, r: 14, t: 12, b: 40 };
+  const top = Math.max(30, ...cells.map(c => Math.max(c[0], c[1]))) + 2;
+  const X = v => pad.l + (w - pad.l - pad.r) * v / top, Y = v => h - pad.b - (h - pad.t - pad.b) * v / top;
+  const most = Math.max(1, ...cells.map(c => c[2])), total = cells.reduce((a, c) => a + c[2], 0);
+  let out = "";
+  for (let v = 0; v <= top; v += 10) {
+    out += `<line x1="${X(v)}" x2="${X(v)}" y1="${Y(0)}" y2="${Y(top)}" stroke="var(--line)"/><text x="${X(v)}" y="${h - pad.b + 16}" text-anchor="middle">${v}</text>`
+      + `<line x1="${X(0)}" x2="${X(top)}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${pad.l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+  }
+  out += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(top)}" y2="${Y(top)}" stroke="var(--muted)" stroke-dasharray="4 4"/>`;
+  out += `<text x="${(pad.l + w - pad.r) / 2}" y="${h - 6}" text-anchor="middle" class="home">${home} points</text>`;
+  out += `<text transform="translate(12 ${(pad.t + h - pad.b) / 2}) rotate(-90)" text-anchor="middle" class="away">${away} points</text>`;
+  const color = c => c[0] > c[1] ? "var(--home)" : c[0] < c[1] ? "var(--away)" : "var(--muted)";
+  for (const c of [...cells].sort((a, b) => a[2] - b[2])) {
+    const k = Math.sqrt(c[2] / most);
+    out += `<circle cx="${X(c[0])}" cy="${Y(c[1])}" r="${(1.6 + 5 * k).toFixed(1)}" fill="${color(c)}" opacity="${(0.25 + 0.7 * k).toFixed(2)}"><title>${home} ${c[0]}, ${away} ${c[1]}: ${c[2].toLocaleString()} games (${(100 * c[2] / total).toFixed(2)}%)</title></circle>`;
+  }
+  svg.innerHTML = out;
+}
+const TEAM_ROWS = [["points", "Points"], ["plays", "Plays"], ["pass_att", "Pass attempts"], ["pass_comp", "Completions"], ["pass_yards", "Pass yards"], ["rush_yards", "Rush yards"], ["td", "Touchdowns"], ["first_downs", "First downs"], ["sack", "Sacks taken"], ["interceptions_thrown", "Interceptions thrown"]];
+
+function renderRun(s) {
+  if (s.idle) return;
+  $("tGames").textContent = s.games_done.toLocaleString();
+  $("tRate").textContent = Math.round(s.games_per_second).toLocaleString();
+  const left = s.running && s.games_per_second > 0 ? (s.games_total - s.games_done) / s.games_per_second : 0;
+  $("tEta").textContent = s.running ? (left > 3600 ? fmt(left / 3600) + " h" : left > 90 ? Math.round(left / 60) + " min" : Math.round(left) + " s") : "done";
+  if (s.games_done) {
+    $("tWin").textContent = pct(s.home_win_prob);
+    $("tWinLabel").textContent = s.home + " win probability";
+    $("tBand").textContent = pct(s.ci_low) + " to " + pct(s.ci_high);
+    $("tMargin").textContent = (s.mean_margin > 0 ? "+" : "") + fmt(s.mean_margin) + " " + s.home;
+    drawLines($("winChart"), 560, 240, [{ points: s.history.map(r => [r[0], r[1], r[3], r[2]]), color: "var(--home)", band: true }],
+      { ymin: Math.max(0, s.home_win_prob - .25), ymax: Math.min(1, s.home_win_prob + .25), xmin: 0, xmax: s.games_total, half: true,
+        xticks: [0, .25, .5, .75, 1].map(f => [f * s.games_total, f ? Math.round(f * s.games_total).toLocaleString() : "0"]) });
+    drawScores($("scoreChart"), s.scores, s.home, s.away);
+    $("teamTable").innerHTML = `<tr><th></th><th class="home">${s.home}</th><th class="away">${s.away}</th></tr>` +
+      TEAM_ROWS.map(([k, n]) => `<tr><td>${n}</td><td>${fmt(s.teams[0][k])}</td><td>${fmt(s.teams[1][k])}</td></tr>`).join("") +
+      `<tr><td>Margin spread (SD)</td><td colspan="2">${fmt(s.margin_sd)}</td></tr><tr><td>Overtime games</td><td colspan="2">${pct(s.ot_rate)}</td></tr>`;
+    $("runBoxes").innerHTML = renderBoxes(s.boxes, [s.home, s.away], true);
+  }
+  $("start").disabled = s.running; $("stop").disabled = !s.running;
+  $("typical").disabled = !s.games_done;
+}
+async function poll() {
+  try { renderRun(await api("/api/run/status")); } catch (e) { /* server busy */ }
+}
+async function startRun(games) {
+  await api("/api/run", body({ games, seed: 2026 }));
+  await poll();
+}
+
+async function runScenario() {
+  $("scenario").disabled = true;
+  const label = lineupLabel();
+  await api("/api/run", body({ games: 3000, seed: 99 }));
+  const wait = setInterval(async () => {
+    const s = await api("/api/run/status");
+    renderRun(s);
+    if (!s.running) {
+      clearInterval(wait);
+      state.scenarios.push({ label, home: s.home, away: s.away, p: s.home_win_prob, lo: s.ci_low, hi: s.ci_high, margin: s.mean_margin });
+      renderScenarios(); $("scenario").disabled = false;
+    }
+  }, 700);
+}
+function renderScenarios() {
+  const base = state.scenarios[0];
+  $("scenarioTable").innerHTML = `<tr><th>Scenario</th><th>Matchup</th><th>Home win</th><th>95% range</th><th>Avg margin</th><th>Change</th></tr>` +
+    state.scenarios.map((s, i) => {
+      const d = i === 0 ? "" : (s.p - base.p) * 100;
+      return `<tr><td>${s.label}</td><td>${s.home} vs ${s.away}</td><td>${pct(s.p)}</td><td>${pct(s.lo)} to ${pct(s.hi)}</td><td>${fmt(s.margin)}</td><td class="${d > 0 ? "pos" : "neg"}">${d === "" ? "baseline" : (d > 0 ? "+" : "") + fmt(d) + " pts"}</td></tr>`;
+    }).join("");
+}
+
+let live = null, liveTimer = null;
+async function showTypical() {
+  $("typical").disabled = true; $("typicalNote").textContent = "finding the most typical game...";
+  try {
+    live = await api("/api/run/typical");
+    showTab("live");
+    $("liveNote").textContent = `most typical of ${live.of.toLocaleString()} games: ${live.home} ${live.final[0]}, ${live.away} ${live.final[1]} (the average is ${fmt(live.average_points[0])} to ${fmt(live.average_points[1])})`;
+    playEvents();
+  } finally { $("typical").disabled = false; $("typicalNote").textContent = "picks the one finished game closest to the averages, then replays it play by play"; }
+}
+function playEvents() {
+  let i = 0; $("feed").innerHTML = ""; $("box").innerHTML = "Appears when the game ends.";
+  clearInterval(liveTimer);
+  liveTimer = setInterval(() => {
+    if (i >= live.events.length) { clearInterval(liveTimer); $("playGame").disabled = false; showBox(); return; }
+    showEvent(i++);
+  }, +$("speed").value);
+}
+async function playGame() {
+  $("playGame").disabled = true; $("liveNote").textContent = "estimating pregame odds, then playing...";
+  const pre = (await api("/api/pregame", body({ sims: 500 }))).p;
+  const exact = $("exactBox").checked;
+  live = await api("/api/game", body({ seed: Math.floor(Math.random() * 1e6), pregame: Math.min(.97, Math.max(.03, pre)), rollouts: exact ? 100 : 0, every: exact ? 12 : 0 }));
+  $("liveNote").textContent = `pregame ${$("home").value} win probability ${pct(pre)}`;
+  playEvents();
+}
+const BIG_SWING = 0.09;
+function bigMoments(shown) {
+  // a dot wherever one play moved the home win chance by 9 points or more (kickoffs and extra points are skipped, the scoring play already shows the swing). Hover to see which play it was
+  const home = live.home || $("home").value, away = live.away || $("away").value, marks = [];
+  for (let k = 1; k < shown.length; k++) {
+    const move = shown[k].p - shown[k - 1].p;
+    if (Math.abs(move) < BIG_SWING || /kicks off|extra point|two point/.test(shown[k].text)) continue;
+    const who = move > 0 ? home : away;
+    marks.push({ x: k, y: shown[k].p, color: move > 0 ? "var(--home)" : "var(--away)",
+      tip: `${shown[k].text}\n${home} ${pct(shown[k - 1].p)} to ${pct(shown[k].p)} (${who} ${fmt(Math.abs(move) * 100)} points)` });
+  }
+  return marks;
+}
+function showEvent(i) {
+  const e = live.events[i], p = e.p;
+  $("liveHome").textContent = (live.home || $("home").value) + " " + pct(p); $("liveAway").textContent = pct(1 - p) + " " + (live.away || $("away").value);
+  $("liveHome").style.width = (100 * p) + "%"; $("liveAway").style.width = (100 * (1 - p)) + "%";
+  $("sHome").textContent = e.home; $("sAway").textContent = e.away;
+  $("sClock").textContent = e.quarter ? (e.quarter > 4 ? "OT" : "Q" + e.quarter) + " " + Math.floor(e.clock / 60) + ":" + String(e.clock % 60).padStart(2, "0") : "";
+  const feed = $("feed");
+  feed.insertAdjacentHTML("beforeend", `<div><span>${e.text}</span><span class="p">${pct(p)}</span></div>`);
+  feed.scrollTop = feed.scrollHeight;
+  const shown = live.events.slice(0, i + 1);
+  const series = [{ points: shown.map((x, k) => [k, x.p]), color: "var(--home)", marks: bigMoments(shown) }];
+  const dots = shown.map((x, k) => x.exact === undefined ? null : [k, x.exact]).filter(Boolean);
+  if (dots.length) series.push({ points: dots, color: "var(--good)", dots: true });
+  drawLines($("liveChart"), 800, 220, series, { ymin: 0, ymax: 1, xmin: 0, xmax: live.events.length - 1, half: true });
+}
+function showBox() { $("box").innerHTML = renderBoxes(live.boxes, [live.home || $("home").value, live.away || $("away").value], false); }
+
+const num = (x, avg, d = 0) => x === null || x === undefined ? "" : avg ? Number(x).toFixed(1) : Number(x).toFixed(d);
+function boxTable(title, head, rows, total) {
+  const line = (cells, cls = "") => `<tr class="${cls}">${cells.map((c, i) => `<td>${c}</td>`).join("")}</tr>`;
+  return `<table class="box"><tr><th>${title}</th>${head.map(h => `<th>${h}</th>`).join("")}</tr>` + rows.map(r => line(r)).join("") + (total ? line(total, "total") : "") + "</table>";
+}
+function sum(rows, k) { return rows.reduce((a, r) => a + r[k], 0); }
+function renderBoxes(boxes, names, avg) {
+  const dash = v => v === "--" ? `<span class="muted">--</span>` : v;
+  const who = r => `${r.name} <span class="muted">${r.pos}</span>`;
+  return boxes.map((b, side) => {
+    const pass = b.passing.map(r => [who(r), `${num(r.comp, avg)}/${num(r.att, avg)}`, num(r.yards, avg), r.att ? fmt(r.pct) : dash("--"), num(r.td, avg), num(r.int, avg), num(r.sacks, avg), r.att ? fmt(r.rating) : dash("--")]);
+    const rush = b.rushing.map(r => [who(r), num(r.car, avg), num(r.yards, avg), r.car ? fmt(r.avg) : dash("--"), num(r.td, avg), avg ? dash("--") : num(r.long)]);
+    const rec = b.receiving.map(r => [who(r), num(r.rec, avg), num(r.tgt, avg), num(r.yards, avg), r.rec ? fmt(r.avg) : dash("--"), num(r.td, avg), avg ? dash("--") : num(r.long)]);
+    const att = sum(b.passing, "att"), comp = sum(b.passing, "comp"), car = sum(b.rushing, "car"), rc = sum(b.receiving, "rec");
+    return `<h3 class="${side ? "away" : "home"}">${names[side]}</h3>`
+      + boxTable("Passing", ["C/ATT", "YDS", "CMP%", "TD", "INT", "SACKS", "RTG"], pass, ["Team", `${num(comp, avg)}/${num(att, avg)}`, num(sum(b.passing, "yards"), avg), att ? fmt(100 * comp / att) : "--", num(sum(b.passing, "td"), avg), num(sum(b.passing, "int"), avg), num(sum(b.passing, "sacks"), avg), ""])
+      + boxTable("Rushing", ["CAR", "YDS", "AVG", "TD", "LNG"], rush, ["Team", num(car, avg), num(sum(b.rushing, "yards"), avg), car ? fmt(sum(b.rushing, "yards") / car) : "--", num(sum(b.rushing, "td"), avg), ""])
+      + boxTable("Receiving", ["REC", "TGTS", "YDS", "AVG", "TD", "LNG"], rec, ["Team", num(rc, avg), num(sum(b.receiving, "tgt"), avg), num(sum(b.receiving, "yards"), avg), rc ? fmt(sum(b.receiving, "yards") / rc) : "--", num(sum(b.receiving, "td"), avg), ""]);
+  }).join("");
+}
+
+async function loadValidation() {
+  const v = await api("/api/validation");
+  if (!v.seasons.length) { $("valTable").textContent = "Run calibration/backtest.py first."; return; }
+  const rows = [["Games", "games", 0], ["Picks the winner", "straight_up_accuracy", "pct"], ["Brier score (lower is better)", "brier", 3], ["Log loss (lower is better)", "logloss", 3],
+    ["Error on final margin (points)", "margin_mae", 2], ["Correlation with real margin", "margin_corr_with_result", 2], ["Error on total points", "total_mae", 2]];
+  const cell = (d, k, f) => f === "pct" ? pct(d[k]) : fmt(d[k], f);
+  $("valTable").innerHTML = `<table><tr><th></th>${v.seasons.map(s => `<th>${s.season} sim</th><th>${s.season} Vegas</th>`).join("")}</tr>` +
+    rows.map(([n, k, f]) => `<tr><td>${n}</td>${v.seasons.map(s => `<td>${cell(s, k, f)}</td><td>${s["vegas_" + k] === undefined ? "" : cell({ x: s["vegas_" + k] }, "x", f)}</td>`).join("")}</tr>`).join("") + `</table>
+    <p class="muted">Each game is predicted from ratings built only with games played before it. Vegas is the closing line.</p>`;
+  const cal = v.seasons.flatMap(s => s.calibration);
+  const merged = {};
+  cal.forEach(c => { const m = merged[c.bin] ??= { n: 0, p: 0, a: 0 }; m.n += c.games; m.p += c.predicted * c.games; m.a += c.actual * c.games; });
+  const pts = Object.values(merged).filter(m => m.n >= 5).map(m => [m.p / m.n, m.a / m.n]).sort((a, b) => a[0] - b[0]);
+  drawLines($("calChart"), 400, 300, [{ points: [[0, 0], [1, 1]], color: "var(--muted)" }, { points: pts, color: "var(--home)", dots: true }, { points: pts, color: "var(--home)" }], { ymin: 0, ymax: 1, xmin: 0, xmax: 1, xticks: [[0, "0%"], [.5, "50%"], [1, "100%"]] });
+  const sm = {}; v.seasons.forEach(s => Object.entries(s.team_stat_means).forEach(([k, d]) => { (sm[k] ??= { sim: 0, real: 0, n: 0 }); sm[k].sim += d.sim; sm[k].real += d.real; sm[k].n++; }));
+  $("statTable").innerHTML = `<tr><th></th><th>Sim</th><th>Real</th></tr>` + Object.entries(sm).map(([k, d]) => `<tr><td>${k.replace(/_/g, " ")}</td><td>${fmt(d.sim / d.n)}</td><td>${fmt(d.real / d.n)}</td></tr>`).join("");
+  $("wpInfo").innerHTML = v.winprob ? `Fast model trained on ${v.winprob.games.toLocaleString()} simulated games (${v.winprob.rows.toLocaleString()} game moments). Held out log loss ${fmt(v.winprob.test_logloss, 3)} (a coin flip is ${fmt(v.winprob.coin_flip_logloss, 3)}).` : "Not trained yet.";
+}
+
+$("start").onclick = () => startRun(+$("games").value);
+$("stop").onclick = async () => { await api("/api/run/stop", {}); poll(); };
+$("scenario").onclick = runScenario;
+$("clearScenarios").onclick = () => { state.scenarios = []; renderScenarios(); };
+$("liveChart").onmousemove = e => {
+  const tip = $("tip"), text = e.target.dataset ? e.target.dataset.tip : null;
+  tip.style.display = text ? "block" : "none";
+  if (text) { tip.textContent = text; tip.style.left = Math.min(e.clientX + 14, innerWidth - 360) + "px"; tip.style.top = (e.clientY + 14) + "px"; }
+};
+$("liveChart").onmouseleave = () => { $("tip").style.display = "none"; };
+$("playGame").onclick = playGame;
+$("typical").onclick = showTypical;
+buildTabs();
+loadTeams();
+setInterval(poll, 800);
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+{
+  "games": 208,
+  "straight_up_accuracy": 0.7067307692307693,
+  "vegas_straight_up_accuracy": 0.7548076923076923,
+  "brier": 0.20097415865384616,
+  "vegas_brier": 0.18847549120169502,
+  "logloss": 0.5908911017229783,
+  "vegas_logloss": 0.5629384910378581,
+  "margin_mae": 9.869375,
+  "vegas_margin_mae": 9.288461538461538,
+  "margin_corr_with_result": 0.48210717150402876,
+  "vegas_margin_corr_with_result": 0.5935669540923987,
+  "total_mae": 10.30264423076923,
+  "vegas_total_mae": 9.783653846153847,
+  "mean_sim_total": 49.067067307692305,
+  "mean_real_total": 46.65384615384615,
+  "sim_vs_vegas_margin_corr": 0.7946098675251709,
+  "calibration": [
+    {
+      "bin": "(-0.001, 0.2]",
+      "games": 5,
+      "predicted": 0.135,
+      "actual": 0.2
+    },
+    {
+      "bin": "(0.2, 0.35]",
+      "games": 20,
+      "predicted": 0.3065,
+      "actual": 0.15
+    },
+    {
+      "bin": "(0.35, 0.5]",
+      "games": 42,
+      "predicted": 0.428452380952381,
+      "actual": 0.2857142857142857
+    },
+    {
+      "bin": "(0.5, 0.65]",
+      "games": 62,
+      "predicted": 0.5728225806451613,
+      "actual": 0.5483870967741935
+    },
+    {
+      "bin": "(0.65, 0.8]",
+      "games": 63,
+      "predicted": 0.7224603174603175,
+      "actual": 0.746031746031746
+    },
+    {
+      "bin": "(0.8, 1.0]",
+      "games": 16,
+      "predicted": 0.8615625,
+      "actual": 0.9375
+    }
+  ],
+  "team_stat_means": {
+    "pass_yards": {
+      "sim": 255.89490384615385,
+      "real": 234.73317307692307
+    },
+    "rush_yards": {
+      "sim": 127.3560576923077,
+      "real": 118.25240384615384
+    },
+    "sack": {
+      "sim": 2.4959374999999997,
+      "real": 2.358173076923077
+    },
+    "interceptions_thrown": {
+      "sim": 0.795,
+      "real": 0.6923076923076923
+    },
+    "plays": {
+      "sim": 65.25536057692308,
+      "real": 61.03605769230769
+    },
+    "first_downs": {
+      "sim": 19.79045673076923,
+      "real": 18.01923076923077
+    }
+  },
+  "sim_margin_sd": 12.351845799421973,
+  "real_margin_sd": 14.57774299603395
+}
