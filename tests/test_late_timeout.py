@@ -140,6 +140,18 @@ def test_no_defense_timeout_with_nothing_to_save():
                 assert not (st.clock < 20 and st.down < 4), (seed, e.text, st)
 
 
+def test_a_two_minute_drill_uses_the_real_hurry_up_clock():
+    rng = random.Random(3)
+    drill = [T.hurry_seconds(q4(73, diff=-1, to=2), "run_in", rng) for _ in range(3000)]
+    drill.sort()
+    assert 18 <= drill[1500] <= 25, drill[1500]
+    assert sum(s >= 30 for s in drill) / len(drill) < 0.35
+    assert T.hurry_seconds(q4(73, diff=3), "run_in", rng) is None, "a leading team is not hurrying"
+    assert T.hurry_seconds(q4(400, diff=-1), "run_in", rng) is None, "only inside 2:00"
+    assert T.hurry_seconds(q4(73, diff=-1), "incomplete", rng) is None, "an incomplete pass already stops the clock"
+    assert T.hurry_seconds(GameState(quarter=3, clock=73), "run_in", rng) is None
+
+
 if __name__ == "__main__":
     test_bucket_functions_match_the_build_script()
     test_tables_are_valid_and_cover_every_situation()
@@ -151,3 +163,4 @@ if __name__ == "__main__":
     test_no_defense_timeout_with_nothing_to_save()
     test_a_team_in_field_goal_range_stops_the_clock_when_time_is_nearly_out()
     print("All late timeout tests passed")
+    test_a_two_minute_drill_uses_the_real_hurry_up_clock()

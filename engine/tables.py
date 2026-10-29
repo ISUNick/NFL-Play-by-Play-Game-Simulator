@@ -10,6 +10,7 @@ FG_TAPER_LINEAR = 0.058
 FG_TAPER_QUAD = 0.0292
 FINAL_EDGES = [0, 5, 10, 20, 30, 45, 60]
 ZONE_EDGES = [0, 10, 30, 38, 50]
+HURRY_KIND = {"run_in": "run", "scramble_in": "run", "complete_in": "complete", "sack": "sack"}
 DEFAULT_DIR = Path(__file__).resolve().parent.parent / "data" / "tables"
 
 LEVEL_TABLES = ["play_call", "play_call_fourth", "play_call_late", "dropback_split", "pass_depth", "pass_result",
@@ -20,10 +21,10 @@ LEVEL_TABLES = ["play_call", "play_call_fourth", "play_call_late", "dropback_spl
 
 
 class Tables:
-    def __init__(self, table_dir=DEFAULT_DIR, pace: float = 1.0):
+    def __init__(self, table_dir=DEFAULT_DIR, pace: float = None):
         self.dir = Path(table_dir)
         era = self._read_era()
-        self.pace = pace if pace != 1.0 else era.get("pace", 1.0)
+        self.pace = pace if pace is not None else era.get("pace", 1.0)
         self.era_edge = Edge(era.get("completion", 0.0), era.get("interception", 0.0), era.get("sack", 0.0),
                              era.get("completion_tilt", 0.0), era.get("run_tilt", 0.0)) if era else None
         specs = json.loads((self.dir / "table_specs.json").read_text())
@@ -64,6 +65,11 @@ class Tables:
         if (self.dir / "fourth_half_end.csv").exists():
             self.half_end_fourth = {(int(r["near"]), int(r["zone"])): (float(r["p_fg"]), float(r["p_go"]))
                                     for r in self._dict_rows("fourth_half_end")}
+
+        self.hurry = {}
+        if (self.dir / "bank_hurry.csv").exists():
+            for r in self._dict_rows("bank_hurry"):
+                self.hurry.setdefault((r["kind"], int(r["has_to"])), []).append(int(r["seconds"]))
 
         xp = next(self._dict_rows("extra_point"))
         self.extra_point = {k: float(v) for k, v in xp.items()}
@@ -137,6 +143,15 @@ class Tables:
             return None
         zone = next(i for i, edge in enumerate(ZONE_EDGES[1:]) if state.yardline_100 <= edge)
         return self.half_end_fourth.get((int(left <= 5), zone))
+
+    def hurry_seconds(self, state, timing_kind: str, rng):
+        # snap to snap time of a real two minute drill: 4th quarter, down 1 to 8, clock kept running.
+        # None anywhere else, then the normal timing bank decides
+        kind = HURRY_KIND.get(timing_kind)
+        if kind is None or state.quarter != 4 or not -8 <= state.score_diff <= -1 or not 0 < state.clock <= 120:
+            return None
+        bank = self.hurry.get((kind, int(state.offense_timeouts > 0)))
+        return rng.choice(bank) if bank else None
 
     def lookup_late(self, late_name: str, name: str, state):
         late = state.late_situation()

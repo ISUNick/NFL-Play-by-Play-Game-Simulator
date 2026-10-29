@@ -560,7 +560,9 @@ class Game:
         flagged = roll_post_snap(st, out, self.tables, self.rng, self._home_offense())
         if flagged:
             return self._penalty(st, flagged, play_kind(out))
-        seconds = self.tables.draw_seconds(out.timing_kind, st.tempo, score_bucket(st.score_diff), self.rng)
+        seconds = self.tables.hurry_seconds(st, out.timing_kind, self.rng)
+        if seconds is None:
+            seconds = self.tables.draw_seconds(out.timing_kind, st.tempo, score_bucket(st.score_diff), self.rng)
         seconds = max(seconds, MIN_PLAY_SECONDS)
         # the play itself is at most 6 seconds, the rest is runoff while the offense gets set
         play_part = min(seconds, PLAY_SECONDS)
