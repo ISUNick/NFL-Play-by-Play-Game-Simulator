@@ -18,7 +18,7 @@ from engine import winprob
 from engine.game import Game
 from engine.tables import Tables
 from engine.teams import ALL_TEAMS, TeamModel
-from players.lineup import Ratings, line_grades, matchup
+from players.lineup import Ratings, UNITS, matchup, unit_grades
 
 STATIC = Path(__file__).resolve().parent / "static"
 BACKTEST_DIR = ROOT / "data" / "backtest"
@@ -41,8 +41,12 @@ def spec_from(body: dict) -> dict:
     return {"home": body["home"], "away": body["away"], "out_home": body.get("out_home", []),
             "out_away": body.get("out_away", []), "play_home": body.get("play_home", []),
             "play_away": body.get("play_away", []), "seed": int(body.get("seed", 1)),
-            "line_home": body.get("line_home") or None, "line_away": body.get("line_away") or None,
+            "swap_home": swaps(body.get("swap_home")), "swap_away": swaps(body.get("swap_away")),
             "team_scale": TEAM_SCALE, "player_scale": PLAYER_SCALE}
+
+
+def swaps(chosen) -> dict:
+    return {unit: team for unit, team in (chosen or {}).items() if unit in UNITS and team}
 
 
 def teams() -> list:
@@ -107,7 +111,7 @@ def packaged(game, units, events: list) -> dict:
 def matchup_for(s: dict, spec: dict) -> tuple:
     return matchup(spec["home"], spec["away"], s["lineup"], s["ratings"], s["model"], spec["out_home"], spec["out_away"],
                    play_home=spec["play_home"], play_away=spec["play_away"],
-                   line_home=spec.get("line_home"), line_away=spec.get("line_away"))
+                   swap_home=spec.get("swap_home"), swap_away=spec.get("swap_away"))
 
 
 def play_live_game(body: dict) -> dict:
@@ -189,8 +193,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.send((STATIC / "index.html").read_bytes(), kind="text/html; charset=utf-8")
             elif url.path == "/api/teams":
                 self.send(teams())
-            elif url.path == "/api/lines":
-                self.send(line_grades(shared()["ratings"]))
+            elif url.path == "/api/units":
+                self.send(unit_grades(shared()["ratings"]))
             elif url.path == "/api/lineup":
                 self.send(lineup(q["team"]))
             elif url.path == "/api/run/status":

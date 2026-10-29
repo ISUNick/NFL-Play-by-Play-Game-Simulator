@@ -52,6 +52,7 @@
   .muted { color: var(--muted); }
   .hidden { display: none; }
   .pos { color: var(--good); } .neg { color: var(--bad); }
+  .line { margin: 0 0 8px; font-size: 12.5px; } .unit { display: inline-block; margin: 0 8px 4px 0; } .unit select { max-width: 96px; }
   #tip { position: fixed; z-index: 10; pointer-events: none; display: none; max-width: 340px; padding: 8px 10px; border-radius: 6px; background: #12202b; color: #fff; font-size: 12.5px; line-height: 1.4; white-space: pre-line; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
 </style>
 </head>
@@ -67,8 +68,8 @@
       <p><span class="away">Away</span> <select id="away"></select></p>
       <p class="muted" style="font-size:12px">Players the injury report lists out are already checked. Uncheck one to have him play, or check anyone else to take him out. <span id="asOf"></span></p>
     </div>
-    <div class="card players" id="homeCard"><h2 class="home">Home lineup</h2><p class="line">Offensive line <select id="lineHome"></select></p><div id="homePlayers"></div></div>
-    <div class="card players" id="awayCard"><h2 class="away">Away lineup</h2><p class="line">Offensive line <select id="lineAway"></select></p><div id="awayPlayers"></div></div>
+    <div class="card players" id="homeCard"><h2 class="home">Home lineup</h2><p class="line"><label class="unit">Offensive line <select data-unit="line" data-side="home"></select></label> <label class="unit">Pass rush <select data-unit="rush" data-side="home"></select></label> <label class="unit">Run defense <select data-unit="run_defense" data-side="home"></select></label> <label class="unit">Coverage <select data-unit="coverage" data-side="home"></select></label> </p><div id="homePlayers"></div></div>
+    <div class="card players" id="awayCard"><h2 class="away">Away lineup</h2><p class="line"><label class="unit">Offensive line <select data-unit="line" data-side="away"></select></label> <label class="unit">Pass rush <select data-unit="rush" data-side="away"></select></label> <label class="unit">Run defense <select data-unit="run_defense" data-side="away"></select></label> <label class="unit">Coverage <select data-unit="coverage" data-side="away"></select></label> </p><div id="awayPlayers"></div></div>
   </div>
 
   <section id="tab-run">
@@ -161,12 +162,13 @@ async function loadTeams() {
   const teams = await api("/api/teams");
   for (const id of ["home", "away"]) $(id).innerHTML = teams.map(t => `<option value="${t.abbr}">${t.name}</option>`).join("");
   $("home").value = "CHI"; $("away").value = "GB";
-  const lines = await api("/api/lines");
-  for (const id of ["lineHome", "lineAway"]) {
-    $(id).innerHTML = `<option value="">Own line</option>` + lines.map(l => `<option value="${l.team}">#${l.rank} ${l.team}</option>`).join("");
-  }
-  $("home").onchange = () => { loadLineup("home"); $("lineHome").value = ""; };
-  $("away").onchange = () => { loadLineup("away"); $("lineAway").value = ""; };
+  const units = await api("/api/units");
+  document.querySelectorAll("select[data-unit]").forEach(sel => {
+    sel.innerHTML = `<option value="">Own</option>` + units[sel.dataset.unit].map(l => `<option value="${l.team}">#${l.rank} ${l.team}</option>`).join("");
+  });
+  const clearSwaps = side => document.querySelectorAll(`select[data-side="${side}"]`).forEach(sel => { sel.value = ""; });
+  $("home").onchange = () => { loadLineup("home"); clearSwaps("home"); };
+  $("away").onchange = () => { loadLineup("away"); clearSwaps("away"); };
   await Promise.all([loadLineup("home"), loadLineup("away")]);
 }
 async function loadLineup(side) {
@@ -185,8 +187,9 @@ async function loadLineup(side) {
     label.querySelector("span").classList.toggle("out", e.target.checked);
   };
 }
+const swapsFor = side => Object.fromEntries([...document.querySelectorAll(`select[data-side="${side}"]`)].map(sel => [sel.dataset.unit, sel.value]));
 const body = extra => ({ home: $("home").value, away: $("away").value, out_home: [...state.out.home], out_away: [...state.out.away],
-  play_home: [...state.play.home], play_away: [...state.play.away], line_home: $("lineHome").value, line_away: $("lineAway").value, ...extra });
+  play_home: [...state.play.home], play_away: [...state.play.away], swap_home: swapsFor("home"), swap_away: swapsFor("away"), ...extra });
 function lineupLabel() {
   const added = ["home", "away"].flatMap(k => [...state.out[k]].filter(n => !state.reported[k].has(n)));
   const back = ["home", "away"].flatMap(k => [...state.play[k]]);

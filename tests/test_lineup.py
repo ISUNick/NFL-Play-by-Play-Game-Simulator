@@ -9,7 +9,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 from engine.game import Game
 from engine.teams import TeamModel
-from players.lineup import Ratings, build_offense, home_bonus, line_grades, matchup, team_edge
+from players.lineup import Ratings, build_offense, home_bonus, matchup, team_edge, unit_grades
 from test_engine_tables import tables as make_tables
 
 RATINGS = Ratings.load()
@@ -100,29 +100,67 @@ def test_a_player_listed_out_plays_when_he_is_put_back():
     assert row.full_name in [r.name for r in build_offense(row.team, LINEUP, RATINGS, play_names=[row.full_name]).receivers]
 
 
+def best_and_worst(unit):
+    rows = unit_grades(RATINGS)[unit]
+    return rows[0]["team"], rows[-1]["team"]
+
+
 def test_a_borrowed_line_brings_its_run_and_sack_numbers_but_not_its_passing():
-    t = RATINGS.team
-    best, worst = t.off_run_yards.idxmax(), t.off_run_yards.idxmin()
+    best, worst = best_and_worst("line")
     own = team_edge(RATINGS, worst, "GB")
-    swapped = team_edge(RATINGS, worst, "GB", line=best)
-    assert swapped.run_tilt > own.run_tilt
+    swapped = team_edge(RATINGS, worst, "GB", {"line": best})
+    assert swapped.run_tilt > own.run_tilt and swapped.sack < own.sack
     assert swapped.completion == own.completion and swapped.interception == own.interception
-    assert team_edge(RATINGS, worst, "GB", line=worst) == own
+    assert team_edge(RATINGS, worst, "GB", {"line": worst}) == own
 
 
-def test_line_grades_rank_every_team_best_first():
-    rows = line_grades(RATINGS)
-    assert len(rows) == len(RATINGS.team) and [r["rank"] for r in rows] == list(range(1, len(rows) + 1))
-    assert all(a["score"] >= b["score"] for a, b in zip(rows, rows[1:]))
+def test_a_borrowed_pass_rush_only_changes_sacks():
+    best, worst = best_and_worst("rush")
+    own = team_edge(RATINGS, "CHI", worst)
+    swapped = team_edge(RATINGS, "CHI", worst, defense_swap={"rush": best})
+    assert swapped.sack > own.sack
+    assert (swapped.run_tilt, swapped.completion, swapped.interception) == (own.run_tilt, own.completion, own.interception)
 
 
-def test_matchup_takes_a_line_for_either_side():
-    best = line_grades(RATINGS)[0]["team"]
-    base = matchup("CHI", "GB", LINEUP, RATINGS, MODEL)
-    plugged = matchup("CHI", "GB", LINEUP, RATINGS, MODEL, line_home=best, line_away=best)
-    assert plugged[0][0] == team_edge(RATINGS, "CHI", "GB", best) or plugged[0][0] != base[0][0]
-    assert plugged[0][1] == matchup("CHI", "GB", LINEUP, RATINGS, MODEL, line_away=best)[0][1]
-    assert plugged[0][0] != base[0][0] or best == "CHI"
+def test_a_borrowed_run_defense_only_changes_the_run():
+    best, worst = best_and_worst("run_defense")
+    own = team_edge(RATINGS, "CHI", worst)
+    swapped = team_edge(RATINGS, "CHI", worst, defense_swap={"run_defense": best})
+    assert swapped.run_tilt < own.run_tilt
+    assert (swapped.sack, swapped.completion, swapped.completion_tilt) == (own.sack, own.completion, own.completion_tilt)
+
+
+def test_a_borrowed_coverage_changes_the_passing_game_and_not_the_run():
+    best, worst = best_and_worst("coverage")
+    own = team_edge(RATINGS, "CHI", worst)
+    swapped = team_edge(RATINGS, "CHI", worst, defense_swap={"coverage": best})
+    assert swapped.completion < own.completion and swapped.interception > own.interception
+    assert swapped.completion_tilt < own.completion_tilt
+    assert (swapped.sack, swapped.run_tilt) == (own.sack, own.run_tilt)
+
+
+def test_unit_grades_rank_every_team_best_first():
+    for unit, rows in unit_grades(RATINGS).items():
+        assert len(rows) == len(RATINGS.team) and [r["rank"] for r in rows] == list(range(1, len(rows) + 1))
+        assert all(a["score"] >= b["score"] for a, b in zip(rows, rows[1:]))
+
+
+def test_a_good_defense_unit_cancels_a_good_offense_unit():
+    best_line = best_and_worst("line")[0]
+    best_run_defense = best_and_worst("run_defense")[0]
+    both = team_edge(RATINGS, "CHI", "GB", {"line": best_line}, {"run_defense": best_run_defense})
+    line_only = team_edge(RATINGS, "CHI", "GB", {"line": best_line}, {})
+    defense_only = team_edge(RATINGS, "CHI", "GB", {}, {"run_defense": best_run_defense})
+    assert defense_only.run_tilt < both.run_tilt < line_only.run_tilt
+
+
+def test_matchup_applies_each_sides_swaps_to_the_right_offense():
+    best_line, worst_line = best_and_worst("line")
+    base = matchup("CHI", "GB", LINEUP, RATINGS, MODEL)[0]
+    home = matchup("CHI", "GB", LINEUP, RATINGS, MODEL, swap_home={"line": best_line})[0]
+    away = matchup("CHI", "GB", LINEUP, RATINGS, MODEL, swap_away={"line": best_line})[0]
+    assert home[0] != base[0] and home[1] == base[1]
+    assert away[1] != base[1] and away[0] == base[0]
 
 
 if __name__ == "__main__":

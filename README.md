@@ -43,7 +43,7 @@ The game by game results are in `data/backtest/`, and the Validation page of the
 
 - Team ratings use this season plus a slight pull from last season (games count half as much every 8 weeks).
 - Receivers and runners get the longer three season look too, so a back's yards per carry and a receiver's catch rate and yards after the catch keep their own spread instead of all sliding to the average. In the backtest this was a wash on accuracy (about 0.221 Brier either way), so it stays for the realism.
-- Offensive lines are rated as one team unit. Each side of a matchup has an Offensive line dropdown, so you can plug in another team's line and see its runs go further and its quarterback get sacked less.
+- Linemen and defenders are rated as team units: offensive line, pass rush, run defense and pass coverage. Each side of a matchup has a dropdown for all four, so you can plug in another team's unit. A strong line against a strong run defense cancel out, and a weak pass rush gives the quarterback time.
 - Quarterbacks are rated over three seasons with a 40 week half life, because quarterback skill lasts for years while a team's line and receivers change quickly. This beat a single short look in the backtest.
 - Quarterbacks with little data start from their Madden rating instead of the league average (`data_prep/madden.py`), so a backup who has barely played is not treated as average.
 
