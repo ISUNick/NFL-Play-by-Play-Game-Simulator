@@ -69,6 +69,7 @@ class Game:
         self.down, self.distance, self.yardline_100 = 1, 10, 75
         self.clock_running = False
         self.runoff = 0
+        self.borrowed = 0  # the second put back on the clock for an untimed down, it is not anyone's possession time
         self.try_team: Optional[int] = None
         self.free_kick = False
         self.fresh = True
@@ -125,7 +126,9 @@ class Game:
                   1 - self.kicker if self.phase == "kickoff" and self.kicker is not None else
                   self.try_team if self.phase == "try" and self.try_team is not None else None)
         if holder is not None:
-            self.stats[holder]["top"] += min(seconds, self.clock)
+            self.stats[holder]["top"] += max(0, min(seconds, self.clock) - self.borrowed)
+        if seconds > 0:
+            self.borrowed = 0
         self.clock = max(0, self.clock - seconds)
         return warning
 
@@ -474,7 +477,7 @@ class Game:
         # a defensive foul on the last play gives the offense one more snap
         untimed = side == "defense" and self.clock <= 0 and self.quarter in (2, 4, 5)
         if untimed:
-            self.clock = 1
+            self.clock, self.borrowed = 1, 1
         self.clock_running = False
         self.runoff = 0
         self.yardline_100, self.down, self.distance = r.new_yardline_100, r.down, r.distance

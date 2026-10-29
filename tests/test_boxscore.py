@@ -110,6 +110,20 @@ def test_passer_rating_and_rows():
     assert clock_text(754) == "12:34"
 
 
+def test_an_untimed_down_is_not_possession_time():
+    for seed in range(30):
+        g = Game(tables(), random.Random(seed), names=("A", "B"))
+        g.quarter, g.clock, g.phase, g.offense, g.clock_running = 4, 0, "scrimmage", 0, False
+        g.down, g.distance, g.yardline_100 = 1, 10, 30
+        g._penalty(g.state(), "defense")
+        assert g.clock == 1, "a defensive foul as time runs out gives one more play"
+        before = g.stats[0]["top"] + g.stats[1]["top"]
+        while not g.over:
+            g.step()
+        if not g.went_to_ot:
+            assert g.stats[0]["top"] + g.stats[1]["top"] == before
+
+
 def test_the_stats_do_not_change_the_game():
     g1, g2 = play_games(1, 5)[0], play_games(1, 5)[0]
     assert g1.scores == g2.scores and dict(g1.stats[0]) == dict(g2.stats[0])
