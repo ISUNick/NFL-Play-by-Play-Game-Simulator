@@ -9,7 +9,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 from engine.game import Game
 from engine.teams import TeamModel
-from players.lineup import Ratings, build_offense, home_bonus, matchup
+from players.lineup import Ratings, build_offense, home_bonus, line_grades, matchup, team_edge
 from test_engine_tables import tables as make_tables
 
 RATINGS = Ratings.load()
@@ -98,6 +98,31 @@ def test_a_player_listed_out_plays_when_he_is_put_back():
     row = out.iloc[0]
     assert row.full_name not in [r.name for r in build_offense(row.team, LINEUP, RATINGS).receivers]
     assert row.full_name in [r.name for r in build_offense(row.team, LINEUP, RATINGS, play_names=[row.full_name]).receivers]
+
+
+def test_a_borrowed_line_brings_its_run_and_sack_numbers_but_not_its_passing():
+    t = RATINGS.team
+    best, worst = t.off_run_yards.idxmax(), t.off_run_yards.idxmin()
+    own = team_edge(RATINGS, worst, "GB")
+    swapped = team_edge(RATINGS, worst, "GB", line=best)
+    assert swapped.run_tilt > own.run_tilt
+    assert swapped.completion == own.completion and swapped.interception == own.interception
+    assert team_edge(RATINGS, worst, "GB", line=worst) == own
+
+
+def test_line_grades_rank_every_team_best_first():
+    rows = line_grades(RATINGS)
+    assert len(rows) == len(RATINGS.team) and [r["rank"] for r in rows] == list(range(1, len(rows) + 1))
+    assert all(a["score"] >= b["score"] for a, b in zip(rows, rows[1:]))
+
+
+def test_matchup_takes_a_line_for_either_side():
+    best = line_grades(RATINGS)[0]["team"]
+    base = matchup("CHI", "GB", LINEUP, RATINGS, MODEL)
+    plugged = matchup("CHI", "GB", LINEUP, RATINGS, MODEL, line_home=best, line_away=best)
+    assert plugged[0][0] == team_edge(RATINGS, "CHI", "GB", best) or plugged[0][0] != base[0][0]
+    assert plugged[0][1] == matchup("CHI", "GB", LINEUP, RATINGS, MODEL, line_away=best)[0][1]
+    assert plugged[0][0] != base[0][0] or best == "CHI"
 
 
 if __name__ == "__main__":

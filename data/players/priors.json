@@ -1,110 +1,114 @@
 {
-  "as_of": "2026 week 7",
   "seasons": [
     2025,
     2026
   ],
   "half_life_weeks": 8.0,
   "madden_qb_slopes": {
-    "completion": 0.01313002174157832,
-    "interception": -0.013316858064868944,
-    "sack": -0.07545780734948586,
-    "completion_yards": 0.14744240544375925
+    "completion": 0.008794333002818283,
+    "interception": -0.0015033242364418152,
+    "sack": -0.07783902866106528,
+    "completion_yards": 0.140965944728306
   },
   "completion": {
-    "cp_offset": -0.03414855994553395,
-    "tau_receiver": 0.2,
+    "cp_offset": -0.053756379320246774,
     "tau_off": 0.09,
-    "tau_def": 0.2
+    "tau_def": 0.14
   },
   "interception": {
-    "tau_off": 0.14,
+    "tau_off": 0.05,
     "tau_def": 0.45,
     "rate_by_depth": {
-      "deep": 0.04546492757765252,
-      "medium": 0.03483748229516965,
-      "short": 0.012296084610901665
+      "deep": 0.043702486331949814,
+      "medium": 0.03353033613632195,
+      "short": 0.012797593576217757
     }
   },
   "sack": {
-    "tau_off": 0.2,
-    "tau_def": 0.3,
-    "league_rate": 0.06390868691004116
+    "tau_off": 0.45,
+    "tau_def": 0.2,
+    "league_rate": 0.06291747781076544
   },
   "completion_yards": {
-    "tau_receiver": 0.5,
     "tau_off": 0.03,
-    "tau_def": 0.3,
-    "within_sd": 6.861717163726063,
-    "yards_variance": 94.99745268861302
+    "tau_def": 0.5,
+    "within_sd": 6.902326991192972,
+    "yards_variance": 94.92601557971088
   },
   "qb_look": {
     "seasons_back": 3,
     "half_life_weeks": 40.0
   },
   "run_yards": {
-    "tau_runner": 0.3,
+    "tau_runner": 0.5,
     "tau_off": 0.3,
     "tau_def": 0.3,
-    "within_sd": 5.751920747900045,
-    "yards_variance": 33.48026581385896
+    "within_sd": 6.033562769432018,
+    "yards_variance": 36.80623241400175
+  },
+  "run_yards_recent": {
+    "tau_off": 0.03,
+    "tau_def": 0.3,
+    "within_sd": 5.75039601672769,
+    "yards_variance": 33.49491371596842
   },
   "target_rate": {
     "WR": {
-      "league_rate": 0.18639355976146446,
-      "prior_snaps": 97.43415712511701
+      "league_rate": 0.18691051668640948,
+      "prior_snaps": 86.93633300537573
     },
     "TE": {
-      "league_rate": 0.13476976447971037,
-      "prior_snaps": 46.70807521095928
+      "league_rate": 0.13433034661819604,
+      "prior_snaps": 45.33685296735515
     },
     "RB": {
-      "league_rate": 0.1286963357891878,
-      "prior_snaps": 111.97588546003934
+      "league_rate": 0.12998338290359696,
+      "prior_snaps": 97.75388098585599
     }
   },
   "depth_mix": {
     "WR": {
-      "prior_throws": 80,
+      "prior_throws": 50,
       "league_mix": {
-        "short": 0.5439383704802465,
-        "medium": 0.2828631881800735,
-        "deep": 0.1731984413396801
+        "short": 0.5452088290890572,
+        "medium": 0.28249264676845076,
+        "deep": 0.1722985241424921
       }
     },
     "TE": {
       "prior_throws": 200,
       "league_mix": {
-        "short": 0.7460884709347468,
-        "medium": 0.18803021929832878,
-        "deep": 0.06588130976692429
+        "short": 0.746083481652932,
+        "medium": 0.1873146077891603,
+        "deep": 0.06660191055790762
       }
     },
     "RB": {
       "prior_throws": 400,
       "league_mix": {
-        "short": 0.9605854134098896,
-        "medium": 0.02873368466180572,
-        "deep": 0.010680901928304804
+        "short": 0.961879107540308,
+        "medium": 0.027843039857265585,
+        "deep": 0.01027785260242648
       }
     }
   },
   "carry_rate": {
     "QB": {
-      "league_rate": 0.048432984339603,
-      "prior_snaps": 27.357069710186586
+      "league_rate": 0.048318628538754765,
+      "prior_snaps": 28.7184281715958
     },
     "RB": {
-      "league_rate": 0.7868967547355707,
-      "prior_snaps": 10.812998348800628
+      "league_rate": 0.7874716747532305,
+      "prior_snaps": 10.772009041687674
     },
     "WR": {
-      "league_rate": 0.019375778385573156,
-      "prior_snaps": 49.41740913146786
+      "league_rate": 0.019351318777908452,
+      "prior_snaps": 48.20416816717214
     },
     "TE": {
-      "league_rate": 0.009687225723460773,
-      "prior_snaps": 312.4433423444069
+      "league_rate": 0.00981756615529812,
+      "prior_snaps": 179.12128116464336
     }
-  }
+  },
+  "as_of": "2026 week 8"
 }

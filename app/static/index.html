@@ -67,8 +67,8 @@
       <p><span class="away">Away</span> <select id="away"></select></p>
       <p class="muted" style="font-size:12px">Players the injury report lists out are already checked. Uncheck one to have him play, or check anyone else to take him out. <span id="asOf"></span></p>
     </div>
-    <div class="card players" id="homeCard"><h2 class="home">Home lineup</h2><div id="homePlayers"></div></div>
-    <div class="card players" id="awayCard"><h2 class="away">Away lineup</h2><div id="awayPlayers"></div></div>
+    <div class="card players" id="homeCard"><h2 class="home">Home lineup</h2><p class="line">Offensive line <select id="lineHome"></select></p><div id="homePlayers"></div></div>
+    <div class="card players" id="awayCard"><h2 class="away">Away lineup</h2><p class="line">Offensive line <select id="lineAway"></select></p><div id="awayPlayers"></div></div>
   </div>
 
   <section id="tab-run">
@@ -161,8 +161,12 @@ async function loadTeams() {
   const teams = await api("/api/teams");
   for (const id of ["home", "away"]) $(id).innerHTML = teams.map(t => `<option value="${t.abbr}">${t.name}</option>`).join("");
   $("home").value = "CHI"; $("away").value = "GB";
-  $("home").onchange = () => loadLineup("home");
-  $("away").onchange = () => loadLineup("away");
+  const lines = await api("/api/lines");
+  for (const id of ["lineHome", "lineAway"]) {
+    $(id).innerHTML = `<option value="">Own line</option>` + lines.map(l => `<option value="${l.team}">#${l.rank} ${l.team}</option>`).join("");
+  }
+  $("home").onchange = () => { loadLineup("home"); $("lineHome").value = ""; };
+  $("away").onchange = () => { loadLineup("away"); $("lineAway").value = ""; };
   await Promise.all([loadLineup("home"), loadLineup("away")]);
 }
 async function loadLineup(side) {
@@ -182,7 +186,7 @@ async function loadLineup(side) {
   };
 }
 const body = extra => ({ home: $("home").value, away: $("away").value, out_home: [...state.out.home], out_away: [...state.out.away],
-  play_home: [...state.play.home], play_away: [...state.play.away], ...extra });
+  play_home: [...state.play.home], play_away: [...state.play.away], line_home: $("lineHome").value, line_away: $("lineAway").value, ...extra });
 function lineupLabel() {
   const added = ["home", "away"].flatMap(k => [...state.out[k]].filter(n => !state.reported[k].has(n)));
   const back = ["home", "away"].flatMap(k => [...state.play[k]]);

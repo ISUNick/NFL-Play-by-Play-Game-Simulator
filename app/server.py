@@ -1,3 +1,4 @@
+import argparse
 import json
 import random
 import sys
@@ -10,13 +11,14 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+import update
 from app import runner
 from app.box import build_box
 from engine import winprob
 from engine.game import Game
 from engine.tables import Tables
 from engine.teams import ALL_TEAMS, TeamModel
-from players.lineup import Ratings, matchup
+from players.lineup import Ratings, line_grades, matchup
 
 STATIC = Path(__file__).resolve().parent / "static"
 BACKTEST_DIR = ROOT / "data" / "backtest"
@@ -39,6 +41,7 @@ def spec_from(body: dict) -> dict:
     return {"home": body["home"], "away": body["away"], "out_home": body.get("out_home", []),
             "out_away": body.get("out_away", []), "play_home": body.get("play_home", []),
             "play_away": body.get("play_away", []), "seed": int(body.get("seed", 1)),
+            "line_home": body.get("line_home") or None, "line_away": body.get("line_away") or None,
             "team_scale": TEAM_SCALE, "player_scale": PLAYER_SCALE}
 
 
@@ -103,7 +106,8 @@ def packaged(game, units, events: list) -> dict:
 
 def matchup_for(s: dict, spec: dict) -> tuple:
     return matchup(spec["home"], spec["away"], s["lineup"], s["ratings"], s["model"], spec["out_home"], spec["out_away"],
-                   play_home=spec["play_home"], play_away=spec["play_away"])
+                   play_home=spec["play_home"], play_away=spec["play_away"],
+                   line_home=spec.get("line_home"), line_away=spec.get("line_away"))
 
 
 def play_live_game(body: dict) -> dict:
@@ -152,8 +156,6 @@ def validation() -> dict:
     for path in sorted(BACKTEST_DIR.glob("summary_*_players_t1.5_p1.5.json")):
         d = json.loads(path.read_text())
         out["seasons"].append({"season": path.name.split("_")[1], **d})
-    teams_only = sorted(BACKTEST_DIR.glob("summary_*_teams_t1.5_p1.5.json"))
-    out["teams_only"] = [{"season": p.name.split("_")[1], **json.loads(p.read_text())} for p in teams_only]
     wp = ROOT / "data" / "tables" / "winprob.json"
     if wp.exists():
         out["winprob"] = json.loads(wp.read_text())["report"]
@@ -187,6 +189,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.send((STATIC / "index.html").read_bytes(), kind="text/html; charset=utf-8")
             elif url.path == "/api/teams":
                 self.send(teams())
+            elif url.path == "/api/lines":
+                self.send(line_grades(shared()["ratings"]))
             elif url.path == "/api/lineup":
                 self.send(lineup(q["team"]))
             elif url.path == "/api/run/status":
@@ -227,9 +231,18 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"Dashboard running at http://127.0.0.1:{port}  (Ctrl+C to stop)")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("port", nargs="?", type=int, default=8000)
+    ap.add_argument("--no-update", action="store_true", help="skip downloading new games and rebuilding the ratings")
+    args = ap.parse_args()
+    if not args.no_update:
+        print("Checking for new games, injuries and rosters...")
+        if update.refresh():
+            print("Ratings are up to date.")
+        else:
+            print("Could not update (no internet?). Using the ratings already saved.")
+    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    print(f"Dashboard running at http://127.0.0.1:{args.port}  (Ctrl+C to stop)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

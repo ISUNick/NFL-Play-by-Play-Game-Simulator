@@ -94,6 +94,8 @@ def test_the_server_answers():
     page = urllib.request.urlopen(base + "/").read()
     assert b"<title>Football Sim</title>" in page and b"bigMoments" in page and b'id="tip"' in page
     assert len(get("/api/teams")) == 32
+    lines = get("/api/lines")
+    assert len(lines) == 32 and lines[0]["rank"] == 1 and lines[0]["score"] >= lines[-1]["score"]
     lineup = get("/api/lineup?team=CHI")
     assert lineup["active"][0]["position"] == "QB"
     assert all("out" in p and "role" in p for p in lineup["active"]) and lineup["as_of"]

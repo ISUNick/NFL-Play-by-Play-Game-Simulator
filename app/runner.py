@@ -37,7 +37,8 @@ def default_workers() -> int:
 
 def lineup_args(spec: dict) -> dict:
     return {"out_home": spec["out_home"], "out_away": spec["out_away"],
-            "play_home": spec.get("play_home", []), "play_away": spec.get("play_away", [])}
+            "play_home": spec.get("play_home", []), "play_away": spec.get("play_away", []),
+            "line_home": spec.get("line_home"), "line_away": spec.get("line_away")}
 
 
 def rosters_for(spec: dict) -> list:

@@ -170,14 +170,30 @@ def build_offense(team: str, lineup: pd.DataFrame, ratings: Ratings, out_names=(
                    info["run_yards"]["yards_variance"], roster)
 
 
-def team_edge(ratings: Ratings, offense: str, defense: str) -> Edge:
-    # unit strength of the offense (line, scheme) plus the defense it faces, all in the engine's own units
+def team_edge(ratings: Ratings, offense: str, defense: str, line: str = None) -> Edge:
+    # unit strength of the offense (line, scheme) plus the defense it faces, all in the engine's own units.
+    # line swaps in another team's blocking: how many yards its backs get and how often its passer is sacked
     o, d = ratings.team.loc[offense], ratings.team.loc[defense]
+    blockers = o if line is None else ratings.team.loc[line]
     info = ratings.info
     return Edge(o.off_completion + d.def_completion, o.off_interception + d.def_interception,
-                o.off_sack + d.def_sack,
+                blockers.off_sack + d.def_sack,
                 (o.off_comp_yards + d.def_comp_yards) / info["completion_yards"]["yards_variance"],
-                (o.off_run_yards + d.def_run_yards) / info["run_yards"]["yards_variance"])
+                (blockers.off_run_yards + d.def_run_yards) / info["run_yards"]["yards_variance"])
+
+
+def line_grades(ratings: Ratings) -> list:
+    # every team's offensive line as the engine sees it, best first. run is yards per carry over average,
+    # sack is the change in sack rate in points (negative is better)
+    t = ratings.team
+    p = ratings.info["sack"]["league_rate"]
+    score = (t.off_run_yards - t.off_run_yards.mean()) / t.off_run_yards.std() - (t.off_sack - t.off_sack.mean()) / t.off_sack.std()
+    rows = [{"team": team, "run": float(t.off_run_yards[team]), "sack": float(100 * p * (1 - p) * t.off_sack[team]), "score": float(score[team])}
+            for team in t.index]
+    rows.sort(key=lambda r: -r["score"])
+    for rank, r in enumerate(rows, 1):
+        r["rank"] = rank
+    return rows
 
 
 def _difference(a: Edge, b: Edge) -> Edge:
@@ -194,10 +210,10 @@ def home_bonus(model: TeamModel) -> tuple:
 
 
 def matchup(home: str, away: str, lineup: pd.DataFrame, ratings: Ratings, model: TeamModel,
-            out_home=(), out_away=(), home_field=True, play_home=(), play_away=()) -> tuple:
+            out_home=(), out_away=(), home_field=True, play_home=(), play_away=(), line_home=None, line_away=None) -> tuple:
     # returns (edges, units) ready to hand to Game
     bonus_home, bonus_away = home_bonus(model) if home_field else (Edge(), Edge())
-    edges = (add_edges(team_edge(ratings, home, away), bonus_home),
-             add_edges(team_edge(ratings, away, home), bonus_away))
+    edges = (add_edges(team_edge(ratings, home, away, line_home), bonus_home),
+             add_edges(team_edge(ratings, away, home, line_away), bonus_away))
     units = (build_offense(home, lineup, ratings, out_home, play_home), build_offense(away, lineup, ratings, out_away, play_away))
     return edges, units

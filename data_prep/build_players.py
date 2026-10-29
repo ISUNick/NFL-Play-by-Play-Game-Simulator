@@ -17,6 +17,7 @@ OUT_DIR = ROOT / "data" / "players"
 
 SEASONS_BACK = int(os.environ.get("SIM_SEASONS_BACK", 1))
 HALF_LIFE_WEEKS = float(os.environ.get("SIM_HALF_LIFE", 8))
+LONG_SKILL = os.environ.get("SIM_LONG_SKILL", "1") == "1"  # rate runners and receivers on the long look too
 QB_SEASONS_BACK = int(os.environ.get("SIM_QB_SEASONS_BACK", 3))
 QB_HALF_LIFE_WEEKS = float(os.environ.get("SIM_QB_HALF_LIFE", 40))
 SHORT_MAX_AIR_YARDS = 9
@@ -112,7 +113,7 @@ def weighted_var(x, w) -> float:
     return float(np.average((x - np.average(x, weights=w)) ** 2, weights=w))
 
 
-def build_passing(plays: pd.DataFrame, info: dict, qb_fixed: dict = None, qb_prior: dict = None) -> dict:
+def build_passing(plays: pd.DataFrame, info: dict, qb_fixed: dict = None, qb_prior: dict = None, rec_fixed: dict = None) -> dict:
     # one model per thing that can happen on a dropback. Every model has the passer, the team's offense and
     # the opposing defense in it together, so a quarterback is not credited for his line and a line not for him
     qb = plays[plays.dropback & plays.qb_id.notna()].copy()
@@ -121,12 +122,16 @@ def build_passing(plays: pd.DataFrame, info: dict, qb_fixed: dict = None, qb_pri
     def fixed(model: str, rows: pd.DataFrame) -> np.ndarray:
         # when the quarterbacks come from a longer look, their effect is taken out first and the rest is left to team and receivers
         given = qb_fixed if qb_fixed is not None else qb_prior
-        if given is None:
-            return np.zeros(len(rows))
-        return rows.qb_id.map(given[model]).fillna(0.0).to_numpy(float)
+        total = np.zeros(len(rows))
+        if given is not None:
+            total += rows.qb_id.map(given[model]).fillna(0.0).to_numpy(float)
+        if rec_fixed is not None and model in rec_fixed:
+            total += rows.receiver_player_id.map(rec_fixed[model]).fillna(0.0).to_numpy(float)
+        return total
 
     def roles(model: str, roles_by_name: dict) -> dict:
-        return {k: v for k, v in roles_by_name.items() if not (qb_fixed is not None and k == "qb")}
+        return {k: v for k, v in roles_by_name.items()
+                if not (qb_fixed is not None and k == "qb") and not (rec_fixed is not None and k == "receiver")}
 
     throws = qb[qb.is_throw & qb.cp.notna() & qb.receiver_player_id.notna()]
     y, w = (throws.complete_pass == 1).to_numpy(float), throws.w.to_numpy()
@@ -203,16 +208,20 @@ def build_passing_two_looks(recent: pd.DataFrame, long: pd.DataFrame, info: dict
         refit["scramble"] = long_fit["scramble"]
         long_fit = refit
     fixed = {m: long_fit[m]["qb"] for m in models}
-    out = build_passing(recent, info, qb_fixed=fixed)
+    rec_fixed = {m: long_fit[m]["receiver"] for m in ("completion", "completion_yards")} if LONG_SKILL else None
+    out = build_passing(recent, info, qb_fixed=fixed, rec_fixed=rec_fixed)
     for m in models:
         out[m]["qb"] = long_fit[m]["qb"]
+    for m in ("completion", "completion_yards"):
+        if LONG_SKILL:
+            out[m]["receiver"] = long_fit[m]["receiver"]
     out["scramble"] = long_fit["scramble"]
     out["completion_pct"], out["dropbacks_w"] = long_fit["completion_pct"], long_fit["dropbacks_w"]
     info["qb_look"] = {"seasons_back": QB_SEASONS_BACK, "half_life_weeks": QB_HALF_LIFE_WEEKS}
     return out
 
 
-def build_run_model(plays: pd.DataFrame, pos_of: pd.Series, info: dict) -> dict:
+def build_run_model(plays: pd.DataFrame, pos_of: pd.Series, info: dict, runner_fixed: pd.Series = None) -> dict:
     r = plays[plays.is_run & plays.rusher_player_id.notna()].copy()
     r["group"] = r.rusher_player_id.map(pos_of)
     r = r[r.group.isin(["QB", "RB", "WR", "TE"])]
@@ -220,11 +229,25 @@ def build_run_model(plays: pd.DataFrame, pos_of: pd.Series, info: dict) -> dict:
     r["expected"] = r.groupby(["group", "bucket"]).yards_gained.transform(lambda s: np.average(s, weights=r.loc[s.index, "w"]))
     r["dev"] = r.yards_gained - r.expected
     sigma2 = weighted_var(r.dev, r.w)
-    fit, tau = fit_linear_players(r.dev, {"runner": r.rusher_player_id, "off": r.posteam, "def": r.defteam},
-                                  r.w, r.game_id, sigma2)
-    info["run_yards"] = {**{f"tau_{k}": t for k, t in tau.items()}, "within_sd": sigma2 ** 0.5,
-                         "yards_variance": weighted_var(r.yards_gained, r.w)}
+    roles = {"runner": r.rusher_player_id, "off": r.posteam, "def": r.defteam}
+    dev = r.dev
+    if runner_fixed is not None:
+        # runners come from the long look, so the recent look only sets the line and the defense around them
+        dev = dev - r.rusher_player_id.map(runner_fixed).fillna(0.0)
+        roles = {k: v for k, v in roles.items() if k != "runner"}
+    fit, tau = fit_linear_players(dev, roles, r.w, r.game_id, sigma2)
+    info["run_yards" if runner_fixed is None else "run_yards_recent"] = {
+        **{f"tau_{k}": t for k, t in tau.items()}, "within_sd": sigma2 ** 0.5, "yards_variance": weighted_var(r.yards_gained, r.w)}
     return fit
+
+
+def build_run_two_looks(recent: pd.DataFrame, long: pd.DataFrame, pos_of: pd.Series, info: dict) -> dict:
+    long_fit = build_run_model(long, pos_of, info)
+    if not LONG_SKILL:
+        return build_run_model(recent, pos_of, info)
+    out = build_run_model(recent, pos_of, info, runner_fixed=long_fit["runner"])
+    out["runner"] = long_fit["runner"]
+    return out
 
 
 def team_units(passing: dict, run: dict) -> pd.DataFrame:
@@ -368,7 +391,7 @@ def build_ratings(seasons: list, before=None) -> dict:
     info = {"seasons": seasons, "half_life_weeks": HALF_LIFE_WEEKS}
     z = madden.z_scores("QB", roster) if before is None else None
     passing = build_passing_two_looks(plays, long_plays, info, z)
-    run_fit = build_run_model(plays, pos_of, info)
+    run_fit = build_run_two_looks(plays, long_plays, pos_of, info)
     qbs = build_qbs(passing)
     qbs = qbs[qbs.index.map(pos_of) == "QB"]
     names = roster.drop_duplicates("gsis_id", keep="last").set_index("gsis_id").full_name
@@ -391,8 +414,11 @@ def main():
         df.round(5).to_csv(OUT_DIR / f"{name}_ratings.csv" if name != "team" else OUT_DIR / "team_units.csv")
     roster = latest_roster()
     week = int(roster[roster.season == last].week.max())
-    inputs = build_lineup_inputs(roster, load_raw("snaps", seasons), load_raw("injuries", seasons), last, week + 1)
+    injuries = load_raw("injuries", seasons)
+    inputs = build_lineup_inputs(roster, load_raw("snaps", seasons), injuries, last, week + 1)
     inputs.to_csv(OUT_DIR / "current_roster.csv", index=False)
+    latest = injuries[injuries.season == injuries.season.max()]
+    built["info"]["as_of"] = f"{int(latest.season.max())} week {int(latest.week.max())}"
     (OUT_DIR / "priors.json").write_text(json.dumps(built["info"], indent=2, default=float))
     t = built["tables"]
     print(f"qbs {len(t['qb'])}, receivers {len(t['receiver'])}, runners {len(t['runner'])}, "

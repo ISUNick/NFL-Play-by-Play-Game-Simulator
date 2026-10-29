@@ -1,5 +1,4 @@
 import argparse
-import json
 import multiprocessing as mp
 import os
 import sys
@@ -16,6 +15,7 @@ import build_players as bp
 from calibration.backtest import _init, simulate
 from engine.teams import TeamModel
 from players.lineup import Ratings, matchup
+from update import current_season
 
 SCHEDULE_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
 OUT_DIR = ROOT / "data" / "predictions"
@@ -75,7 +75,7 @@ def standings(games: pd.DataFrame, pred: pd.DataFrame) -> pd.DataFrame:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--season", type=int, default=2026)
+    ap.add_argument("--season", type=int, default=current_season())
     ap.add_argument("--sims", type=int, default=300)
     ap.add_argument("--workers", type=int, default=os.cpu_count() or 2)
     ap.add_argument("--team-scale", type=float, default=1.5)
